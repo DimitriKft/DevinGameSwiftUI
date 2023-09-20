@@ -22,19 +22,37 @@ struct DevinGameView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                Spacer()
-                
                 Text("Devinez le nombre entre 1 et 100")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(Color.blue)
                     .padding()
                 
-                TextField("Entrez votre estimation", text: $guess)
-                    .keyboardType(.numberPad)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal, 40)
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                VStack {
+                    Text("Entrez votre estimation")
+                        .font(.title)
+                        .foregroundColor(Color.blue)
+                        .padding(.top, 20)
+                    
+                    TextField("", text: $guess)
+                        .font(.largeTitle)
+                        .padding()
+                        .frame(width: 150, height: 150) // Ajustez la largeur et la hauteur selon vos besoins
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.center) // Centre le texte entré par l'utilisateur
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.blue, lineWidth: 2)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.white)
+                                )
+                        )
+                        .padding(.horizontal, 40)
+                        .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 10)
+                }
+
+
                 
                 Button(action: checkGuess) {
                     Text("Devinez")
@@ -86,7 +104,6 @@ struct DevinGameView: View {
                     .padding(.bottom)
             }
             .padding(.top, 20)
-            .navigationTitle("Jeu du Devin")
             .background(Color(.systemBackground))
         }
         .alert(isPresented: $showVictoryAlert) {

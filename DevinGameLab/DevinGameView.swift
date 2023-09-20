@@ -54,6 +54,7 @@ struct DevinGameView: View {
                         .foregroundColor(Color.gray)
                     Text("\(attempts)")
                         .font(.system(size: getFontSizeForRemainingAttempts(attempts)))
+                        .fontWeight(.bold)
                         .foregroundColor(getColorForRemainingAttempts(attempts))
                     Text("Essais")
                         .font(.title2)

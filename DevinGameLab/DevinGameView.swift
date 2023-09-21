@@ -156,32 +156,29 @@ struct DevinGameView: View {
                 let entry = GameHistoryEntry(date: Date(), attempts: currentScore, wasVictory: true)
                 scoreHistory.append(entry)
                 UserDefaults.standard.set(try? PropertyListEncoder().encode(scoreHistory), forKey: "ScoreHistory")
+                hasLost = false
                 showVictoryAlert = true
             } else if guessValue < target {
                 hint = "Le nombre caché est plus grand."
                 attempts -= 1
-                if attempts == 0 {
-                    hint = "Désolé, vous avez épuisé vos essais. Le nombre caché était \(target)."
-                    hasLost = true
-                    let entry = GameHistoryEntry(date: Date(), attempts: 10, wasVictory: false)
-                    scoreHistory.append(entry)
-                    UserDefaults.standard.set(try? PropertyListEncoder().encode(scoreHistory), forKey: "ScoreHistory")
-                    showVictoryAlert = true
-                }
             } else {
                 hint = "Le nombre caché est plus petit."
                 attempts -= 1
-                if attempts == 0 {
-                    hint = "Désolé, vous avez épuisé vos essais. Le nombre caché était \(target)."
-                    hasLost = true
-                    let entry = GameHistoryEntry(date: Date(), attempts: 10, wasVictory: false)
-                    scoreHistory.append(entry)
-                    UserDefaults.standard.set(try? PropertyListEncoder().encode(scoreHistory), forKey: "ScoreHistory")
-                    showVictoryAlert = true
-                }
             }
+            
+            if attempts == 0 {
+                hint = "Désolé, vous avez épuisé vos essais. Le nombre caché était \(target)."
+                hasLost = true
+                let entry = GameHistoryEntry(date: Date(), attempts: 10, wasVictory: false)
+                scoreHistory.append(entry)
+                UserDefaults.standard.set(try? PropertyListEncoder().encode(scoreHistory), forKey: "ScoreHistory")
+                showVictoryAlert = true
+            }
+        } else {
+            hint = "Veuillez entrer un nombre valide."
         }
     }
+
 
     func startNewGame() {
         attempts = 10

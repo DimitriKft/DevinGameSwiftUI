@@ -8,36 +8,34 @@
 
 import SwiftUI
 
+
 struct HistoryGameView: View {
-    @Binding var scoreHistoryBinding: [Int]
+    @Binding var scoreHistoryBinding: [DevinGameView.GameHistoryEntry]
+
     var body: some View {
-        VStack{
-            ScrollView {
-                ForEach(scoreHistoryBinding, id: \.self) { score in
-                    HStack {
-                        Image(systemName: "flag.fill")
-                            .foregroundColor(.purple)
-                            .font(.system(size: 28, weight: .semibold))
-                            .padding(.trailing, 10)
-                            .padding(.leading, 10)
-                        Text("Score :")
-                            .fontWeight(.semibold)
-                            .foregroundColor(.gray)
-                        Text("\(score) tentatives")
-                            .font(.headline)
-                            .padding(.leading, 5)
-                            .padding(.trailing, 10)
-                    }
-                    .padding(.vertical, 8)
-                    .background(Color(.secondarySystemBackground))
-                    .cornerRadius(8)
-                    .padding(.horizontal)
+        List(scoreHistoryBinding.reversed(), id: \.id) { entry in
+            HStack {
+                if entry.wasVictory {
+                    Image(systemName: "flag.fill")
+                        .foregroundColor(.green)
+                } else {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.red)
+                }
+
+                VStack(alignment: .leading) {
+                    Text("Date : \(entry.date.formatted(date: .abbreviated, time: .shortened))")
+                        .font(.headline)
+                    Text("Tentatives : \(entry.attempts)")
+                        .font(.subheadline)
                 }
             }
         }
+        .navigationBarTitle("Historique des parties", displayMode: .inline)
     }
 }
 
+
 #Preview {
-    HistoryGameView(scoreHistoryBinding: .constant([1, 4, 5]))
+    HistoryGameView(scoreHistoryBinding: .constant([DevinGameView.GameHistoryEntry(date: Date(), attempts: 3, wasVictory: true)]))
 }

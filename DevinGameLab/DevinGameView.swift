@@ -6,15 +6,28 @@
 //
 //
 import SwiftUI
-import SwiftUI
 
 struct DevinGameView: View {
+    struct GameHistoryEntry: Identifiable, Codable {
+        var id = UUID()
+        let date: Date
+        let attempts: Int
+        let wasVictory: Bool
+    }
+
     @State private var target = Int.random(in: 1...100)
     @State private var guess = ""
     @State private var attempts = 10
     @State private var bestAttempts = UserDefaults.standard.integer(forKey: "BestAttempts")
     @State private var hint = ""
-    @State private var scoreHistory: [Int] = UserDefaults.standard.array(forKey: "ScoreHistory") as? [Int] ?? []
+    @State private var scoreHistory: [GameHistoryEntry] = {
+        if let data = UserDefaults.standard.value(forKey: "ScoreHistory") as? Data,
+           let scoreHistory = try? PropertyListDecoder().decode([GameHistoryEntry].self, from: data) {
+            return scoreHistory
+        } else {
+            return []
+        }
+    }()
     @State private var showVictoryAlert = false
     @State private var totalAttempts = 0
     @State private var hasLost = false
@@ -27,7 +40,7 @@ struct DevinGameView: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color.blue)
                     .padding()
-                
+
                 VStack {
                     Text("Entrez votre estimation")
                         .font(.title)
@@ -37,9 +50,9 @@ struct DevinGameView: View {
                     TextField("", text: $guess)
                         .font(.largeTitle)
                         .padding()
-                        .frame(width: 150, height: 150) // Ajustez la largeur et la hauteur selon vos besoins
+                        .frame(width: 150, height: 150)
                         .keyboardType(.numberPad)
-                        .multilineTextAlignment(.center) // Centre le texte entré par l'utilisateur
+                        .multilineTextAlignment(.center)
                         .background(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.blue, lineWidth: 2)
@@ -52,8 +65,6 @@ struct DevinGameView: View {
                         .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 10)
                 }
 
-
-                
                 Button(action: checkGuess) {
                     Text("Devinez")
                         .font(.title2)
@@ -65,7 +76,7 @@ struct DevinGameView: View {
                         .shadow(color: Color.blue.opacity(0.3), radius: 5, x: 0, y: 5)
                 }
                 .padding(.horizontal, 40)
-                
+
                 HStack(alignment: .center, spacing: 10) {
                     Text("Il reste")
                         .font(.title2)
@@ -78,17 +89,14 @@ struct DevinGameView: View {
                         .font(.title2)
                         .foregroundColor(Color.gray)
                 }
-                
-               
+
                 Text(hint)
                     .font(.headline)
                     .padding(10)
                     .background(hint.isEmpty ? Color.clear : Color(.secondarySystemBackground))
                     .cornerRadius(8)
                     .padding(.horizontal, 10)
-                    .cornerRadius(8)
-                    .padding(.horizontal, 10)
-                
+
                 NavigationLink(destination: HistoryGameView(scoreHistoryBinding: $scoreHistory)) {
                     Text("Historique des parties")
                         .fontWeight(.semibold)
@@ -121,7 +129,7 @@ struct DevinGameView: View {
                     title: Text("Félicitations!"),
                     message: Text("Vous avez trouvé le nombre caché en \(currentScore) essais."),
                     dismissButton: .default(Text("Nouvelle partie")) {
-                        totalAttempts += currentScore // Mettez à jour le nombre d'essais ici
+                        totalAttempts += currentScore
                         startNewGame()
                     }
                 )
@@ -145,8 +153,9 @@ struct DevinGameView: View {
                     bestAttempts = currentScore
                     UserDefaults.standard.set(bestAttempts, forKey: "BestAttempts")
                 }
-                scoreHistory.append(currentScore)
-                UserDefaults.standard.set(scoreHistory, forKey: "ScoreHistory")
+                let entry = GameHistoryEntry(date: Date(), attempts: currentScore, wasVictory: true)
+                scoreHistory.append(entry)
+                UserDefaults.standard.set(try? PropertyListEncoder().encode(scoreHistory), forKey: "ScoreHistory")
                 showVictoryAlert = true
             } else if guessValue < target {
                 hint = "Le nombre caché est plus grand."
@@ -154,6 +163,9 @@ struct DevinGameView: View {
                 if attempts == 0 {
                     hint = "Désolé, vous avez épuisé vos essais. Le nombre caché était \(target)."
                     hasLost = true
+                    let entry = GameHistoryEntry(date: Date(), attempts: 10, wasVictory: false)
+                    scoreHistory.append(entry)
+                    UserDefaults.standard.set(try? PropertyListEncoder().encode(scoreHistory), forKey: "ScoreHistory")
                     showVictoryAlert = true
                 }
             } else {
@@ -162,31 +174,31 @@ struct DevinGameView: View {
                 if attempts == 0 {
                     hint = "Désolé, vous avez épuisé vos essais. Le nombre caché était \(target)."
                     hasLost = true
+                    let entry = GameHistoryEntry(date: Date(), attempts: 10, wasVictory: false)
+                    scoreHistory.append(entry)
+                    UserDefaults.standard.set(try? PropertyListEncoder().encode(scoreHistory), forKey: "ScoreHistory")
                     showVictoryAlert = true
                 }
             }
-        } else {
-            hint = "Veuillez entrer un nombre valide."
         }
     }
 
     func startNewGame() {
-        target = Int.random(in: 1...100)
-        guess = ""
         attempts = 10
+        target = Int.random(in: 1...100)
         hint = ""
-        hasLost = false
+        guess = ""
     }
-
+    
     func getColorForRemainingAttempts(_ remainingAttempts: Int) -> Color {
-        let maxAttempts = 10.0
-        let percentage = Double(remainingAttempts) / maxAttempts
-        
-        let redValue = min(1.0, 1.0 * (1 - percentage) + 0.2)
-        let greenValue = max(0.0, 0.8 * percentage)
-        let blueValue = max(0.0, 0.8 * percentage)
-        
-        return Color(red: redValue, green: greenValue, blue: blueValue)
+        switch remainingAttempts {
+        case 1...3:
+            return Color.red
+        case 4...6:
+            return Color.orange
+        default:
+            return Color.green
+        }
     }
 }
 

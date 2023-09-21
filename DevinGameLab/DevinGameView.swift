@@ -177,7 +177,11 @@ struct DevinGameView: View {
         } else {
             hint = "Veuillez entrer un nombre valide."
         }
+        
+        // Réinitialiser la valeur de guess
+        guess = ""
     }
+
 
 
     func startNewGame() {
